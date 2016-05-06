@@ -10,24 +10,7 @@
       <div id="controlpanel">
         <input type="button" class="btn-ctrl" id="btn-zin" value="ZoomIn"></input>
         <input type="button" class="btn-ctrl" id="btn-zout" value="ZoomOut"></input>
-      </div>
-      <script>
-        var zoomin = document.getElementById("btn-zin");
-        zoomin.onclick=function(){
-          c.position.setZ(c.position.z/2.00>50?c.position.z/2.00>50:50);
-          // r.render(s, c);
-          // requestAnimationFrame(animate);
-          console.log('zoomin');
-        }
-        var zoomout = document.getElementById("btn-zout");
-        zoomout.onclick=function(){
-          c.position.setZ(c.position.z*2.00<1000?c.position.z*2.00:1000);
-          // r.render(s, c);
-          // requestAnimationFrame(animate);
-          console.log('zoomout');
-        }
-
-      </script>
+      </div>      
   </body>
   <script src="three.min.js"></script>
     <script src="bitview.js"></script>
@@ -198,6 +181,24 @@
         ThreeShp.controls.update();
         ThreeShp.r.render( ThreeShp.s, ThreeShp.c );
       }
+
+      
+      var zoomin = document.getElementById("btn-zin");
+      zoomin.onclick=function(){
+        ThreeShp.c.position.setZ(ThreeShp.c.position.z/2.00>50?ThreeShp.c.position.z/2.00>50:50);
+        // r.render(s, c);
+        // requestAnimationFrame(animate);
+        console.log('zoomin');
+      }
+      var zoomout = document.getElementById("btn-zout");
+      zoomout.onclick=function(){
+        ThreeShp.c.position.setZ(ThreeShp.c.position.z*2.00<1000?ThreeShp.c.position.z*2.00:1000);
+        // r.render(s, c);
+        // requestAnimationFrame(animate);
+        console.log('zoomout');
+      }
+
+      
     </script>
 
 </html>
