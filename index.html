@@ -63,9 +63,9 @@
         this.c.position.x = 114.022;
         this.s.add(this.c);
 
-        // 添加鼠标交互空间
+        // 添加鼠标交互控件
         this.controls = new THREE.TrackballControls(this.c, this.r.domElement);
-        this.controls.minDistance = 10;
+        this.controls.minDistance = 1;
         this.controls.maxDistance = 1000;
       }
       ThreeShp.rendershp = function(res) {
