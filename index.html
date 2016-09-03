@@ -1,16 +1,28 @@
-<!doctype html>
 <html>
-  <head>
-<!--
-    <script src="http://mrdoob.github.com/three.js/build/Three.js"></script>
--->
-       
+  <head>      
   </head>
   <body>
       <div id="controlpanel">
         <input type="button" class="btn-ctrl" id="btn-zin" value="ZoomIn"></input>
         <input type="button" class="btn-ctrl" id="btn-zout" value="ZoomOut"></input>
-      </div>      
+      </div>
+      <script>
+        var zoomin = document.getElementById("btn-zin");
+        zoomin.onclick=function(){
+          c.position.setZ(c.position.z/2.00>50?c.position.z/2.00>50:50);
+          // r.render(s, c);
+          // requestAnimationFrame(animate);
+          console.log('zoomin');
+        }
+        var zoomout = document.getElementById("btn-zout");
+        zoomout.onclick=function(){
+          c.position.setZ(c.position.z*2.00<1000?c.position.z*2.00:1000);
+          // r.render(s, c);
+          // requestAnimationFrame(animate);
+          console.log('zoomout');
+        }
+
+      </script>
   </body>
   <script src="three.min.js"></script>
     <script src="bitview.js"></script>
@@ -69,19 +81,13 @@
         //save(compressed, '110m_land.i12d6')
         var n = ThreeShp.loader.loadCompressed(compressed, false);
         n.scale.set(1.01,1.01,1.01);
-        n.position.z = 10;
+        n.position.z = 10;        
         
-        // ThreeShp.s.add(new THREE.Mesh(
-        //   // new THREE.SphereGeometry(88, 64, 64),
-        //   // SphereGeometry( radius, detail)
-        //   new THREE.SphereGeometry(90, 100, 150),
-        //   new THREE.MeshBasicMaterial({color: 0x0088FF, opacity: 0.2, depthWrite:false})
-        // ));
         ThreeShp.s.add(m);
         ThreeShp.s.add(n);
 
         // Openlayer.View alike  -- PerspectiveCamera... Scene is needed!!.and Camera added to Scene!!!
-        // // Camera(fov,canvwidth/canvheight,)
+        // // Camera(fov, aspect, near, far)
         // c = new THREE.PerspectiveCamera(41, window.innerWidth / window.innerHeight, 1, 100000);
         
         var t0 = new Date;
@@ -106,68 +112,71 @@
       var parsedShp = null;
       ThreeShp.init();
       SHPParser.load("110m_land.shp",ThreeShp.rendershp,err);
+      ThreeShp.s.add(createRect(60, 40, 20));
+      var phOpt = {
+        rad: 30, segWitdh:30, segHeight:10, xlen: Math.PI, ylen:Math.PI/2, ystart: Math.PI/2
+      };
+      ThreeShp.s.add(createSphere(phOpt));
+      var newIco = createIcosahedronGeom(5, 1);
+      newIco.position.x += 60;
+      ThreeShp.s.add(newIco);
+      ThreeShp.s.add(customGeom());
       // SHPParser.load("cpdmpop2010_poly_wgs.shp",ThreeShp.rendershp,err);
 
-      // // six_counties.shp 110m_land.shp
-      // SHPParser.load('110m_land.shp', 
-      //   function(res) {
-      //     // res is shp.js defined shpobj.
-      //     console.log('ok', res);
-      //     // parsedShp = res;
-      //     var loader = new THREE.SHPLoader();
-      //     // m instanceof THREE.Object3D, createModel(shp, SphereOrNot)
-      //     var m = loader.createModel(res, false);
-      //     m.scale.set(1.01, 1.01, 1.01);
-      //     console.log('created model', m);
-      //     var compressed = loader.compress(res);
-      //     //save(compressed, '110m_land.i12d6')
-      //     var n = loader.loadCompressed(compressed, false);
-      //     n.scale.set(1.01,1.01,1.01);
-      //     n.position.z = 10;
-      //     r = new THREE.WebGLRenderer();
-      //     // set the canvas width and length
-      //     r.setSize(window.innerWidth, window.innerHeight);
-      //     document.body.appendChild(r.domElement);
-      //     // THREE data struct.. Scene.add(Mesh)/Object3D
-      //     s = new THREE.Scene();
-      //     // s.add(new THREE.Mesh(
-      //     //   // new THREE.SphereGeometry(88, 64, 64),
-      //     //   // SphereGeometry( radius, detail)
-      //     //   new THREE.SphereGeometry(90, 100, 150),
-      //     //   new THREE.MeshBasicMaterial({color: 0x0088FF, opacity: 0.2, depthWrite:false})
-      //     // ));
-      //     s.add(m);
-      //     s.add(n);
-      //     // Openlayer.View alike  -- PerspectiveCamera... Scene is needed!!.and Camera added to Scene!!!
-      //     // Camera(fov,canvwidth/canvheight,)
-      //     c = new THREE.PerspectiveCamera(41, window.innerWidth / window.innerHeight, 1, 100000);
-      //     // 照相机在三维空间中的位置。 
-      //     c.position.z = 50;
-      //     c.position.y = 23.11;
-      //     c.position.x = 114.022;
-      //     s.add(c);
-      //     var t0 = new Date;
-      //     // var animate = function(t) {
-      //     //   var dt = t-t0;
-      //     //   t0 = t;
-      //     //   m.rotation.y += 0.0001 * dt;
-      //     //   n.rotation.y += 0.0001 * dt;
-      //     //   c.lookAt(new THREE.Vector3(0,0,0));
-      //     //   r.render(s, c);
-      //     //   //requestAnimationFrame(animate);
-      //     // }
-      //     //requestAnimationFrame(animate);
-      //     //lookAt control the angle, right..
-      //     c.lookAt(new THREE.Vector3(0,0,0));
-      //     r.render(s, c);
-      //     addmouseMove();
+      function createRect(xlen, ylen, zdepth) {
+        var cube = new THREE.Mesh(          
+          // SphereGeometry(radius, detail)
+          // PlaneGeometry(xlen, ylen)
+          new THREE.CubeGeometry(xlen, ylen, zdepth),
+          new THREE.MeshBasicMaterial({color: 0x0088FF, opacity: 0.8, wireframe: true})
+        )
+        cube.position.z = 10;
 
-      //     controls = new THREE.TrackballControls(c, r.domElement);
-      //     controls.minDistance = 10;
-      //     controls.maxDistance = 1000;
-      //     },
-      //   function(res){ console.log('error', res); }
-      // );
+        return cube;
+      }
+      function createSphere(opt) {
+        var xstart = opt.xstart? opt.xstart:0;
+        var xlen = opt.xlen? opt.xlen:Math.PI;
+        var ystart = opt.ystart? opt.ystart:0;
+        var ylen = opt.ylen? opt.ylen:Math.PI;
+        var sphereGeom = new THREE.SphereGeometry(opt.rad, opt.segWitdh, opt.segHeight, xstart,xlen,ystart, ylen);
+        var sphereMesh = new THREE.Mesh(sphereGeom,
+          new THREE.MeshBasicMaterial({
+            color: 0x00ff88, wireframe: true
+          })
+        );
+        return sphereMesh;
+      }
+
+      function createIcosahedronGeom(rad, detail) {
+        var mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(rad, detail),
+          new THREE.MeshBasicMaterial({color:0x882233,
+            wireframe: true})
+        );
+        return mesh;
+      }
+
+      function customGeom() {
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(30,0,20));
+        geometry.vertices.push(new THREE.Vector3(40,0,20));
+        geometry.vertices.push(new THREE.Vector3(35,25,20));
+
+        geometry.vertices.push(new THREE.Vector3(35,8,25))
+
+        // Face3 means a 3points- Patch consists vertice (index in vertices Arr)
+        geometry.faces.push(new THREE.Face3(0,1,2));
+        geometry.faces.push(new THREE.Face3(0,1,3));
+        geometry.faces.push(new THREE.Face3(0,2,3));
+        geometry.faces.push(new THREE.Face3(1,2,3));
+        var mesh = new THREE.Mesh(geometry,
+          new THREE.MeshBasicMaterial({
+            color: 0xEDFF00,
+            opacity: 0.5
+            //wireframe: true
+          }));
+        return mesh;
+      }
 
       var addmouseMove = function(){
         var canvas = document.getElementsByTagName("canvas")[0];
@@ -182,23 +191,59 @@
         ThreeShp.r.render( ThreeShp.s, ThreeShp.c );
       }
 
-      
-      var zoomin = document.getElementById("btn-zin");
-      zoomin.onclick=function(){
-        ThreeShp.c.position.setZ(ThreeShp.c.position.z/2.00>50?ThreeShp.c.position.z/2.00>50:50);
-        // r.render(s, c);
-        // requestAnimationFrame(animate);
-        console.log('zoomin');
-      }
-      var zoomout = document.getElementById("btn-zout");
-      zoomout.onclick=function(){
-        ThreeShp.c.position.setZ(ThreeShp.c.position.z*2.00<1000?ThreeShp.c.position.z*2.00:1000);
-        // r.render(s, c);
-        // requestAnimationFrame(animate);
-        console.log('zoomout');
-      }
 
-      
+      var light = new THREE.DirectionalLight(0xffffff);
+      light.position.set(-5, 10, 50);
+      ThreeShp.s.add(light);
+      drawAxes(ThreeShp.s);
+
+      var material = new THREE.MeshBasicMaterial({
+          color: 0xffff00,
+          wireframe: true
+      });
+      // load font
+      var loader = new THREE.FontLoader();
+      loader.load('helvetiker_bold.typeface.json', function(font) {
+          var mesh = new THREE.Mesh(new THREE.TextGeometry('Hello', {
+              font: font,
+              size: 1,
+              height: 1
+          }), material);
+          ThreeShp.s.add(mesh);
+      });
+            
+      function drawAxes(scene) {
+        // x-axis
+        var xGeo = new THREE.Geometry();
+        xGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+        xGeo.vertices.push(new THREE.Vector3(1, 0, 0));
+        var xMat = new THREE.LineBasicMaterial({
+            color: 0xff0000
+        });
+        // Line, Mesh...
+        var xAxis = new THREE.Line(xGeo, xMat);
+        scene.add(xAxis);
+        
+        // y-axis
+        var yGeo = new THREE.Geometry();
+        yGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+        yGeo.vertices.push(new THREE.Vector3(0, 1, 0));
+        var yMat = new THREE.LineBasicMaterial({
+            color: 0x00ff00
+        });
+        var yAxis = new THREE.Line(yGeo, yMat);
+        scene.add(yAxis);
+        
+        // z-axis
+        var zGeo = new THREE.Geometry();
+        zGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+        zGeo.vertices.push(new THREE.Vector3(0, 0, 1));
+        var zMat = new THREE.LineBasicMaterial({
+            color: 0x00ccff
+        });
+        var zAxis = new THREE.Line(zGeo, zMat);
+        scene.add(zAxis);
+      }
     </script>
 
 </html>
