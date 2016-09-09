@@ -24,6 +24,7 @@
 
       </script>
   </body>
+  <!-- <script src="Three.js"></script> -->
   <script src="three.min.js"></script>
     <script src="bitview.js"></script>
     <script src="shp.js"></script>
@@ -81,15 +82,17 @@
         //save(compressed, '110m_land.i12d6')
         var n = ThreeShp.loader.loadCompressed(compressed, false);
         n.scale.set(1.01,1.01,1.01);
-        n.position.z = 10;        
+        n.position.z = 10;
+        n.receiveShadow = true;
         
         ThreeShp.s.add(m);
         ThreeShp.s.add(n);
 
         // Openlayer.View alike  -- PerspectiveCamera... Scene is needed!!.and Camera added to Scene!!!
         // // Camera(fov, aspect, near, far)
-        // c = new THREE.PerspectiveCamera(41, window.innerWidth / window.innerHeight, 1, 100000);        
-        
+
+                
+        //lookAt control the angle, right..
         ThreeShp.c.lookAt(new THREE.Vector3(0,0,0));
         ThreeShp.r.render(ThreeShp.s, ThreeShp.c);
         //addmouseMove();          
@@ -100,9 +103,9 @@
       var parsedShp = null;
       ThreeShp.init();
       SHPParser.load("110m_land.shp",ThreeShp.rendershp,err);
-      ThreeShp.s.add(createRect(60, 40, 20));
+      //ThreeShp.s.add(createRect(60, 40, 20));
       var phOpt = {
-        rad: 30, segWitdh:30, segHeight:10, xlen: Math.PI, ylen:Math.PI/2, ystart: Math.PI/2
+        rad: 20, segWitdh:20, segHeight:10, xlen: Math.PI, ylen:Math.PI/2, ystart: Math.PI/2
       };
       ThreeShp.s.add(createSphere(phOpt));
       var newIco = createIcosahedronGeom(5, 1);
@@ -114,8 +117,11 @@
 
       ThreeShp.s.add(createPlane(20));
 
-      // Custom Geometry!!!
-      ThreeShp.s.add(customGeom());
+      var targetObj =  customGeom();
+      // targetObj.position.set(-10, 0, 10);
+      ThreeShp.s.add(targetObj);
+      ThreeShp.r.shadowMap.enabled = true;
+      ThreeShp.r.shadowMap.type = THREE.PCFSoftShadowMap;
       // SHPParser.load("cpdmpop2010_poly_wgs.shp",ThreeShp.rendershp,err);
 
 
@@ -130,17 +136,18 @@
       }
       requestAnimationFrame(rotate1);
 
-      function createRect(xlen, ylen, zdepth) {
+      function createRect(xlen, ylen, zdepth, color) {
         var cube = new THREE.Mesh(          
           // SphereGeometry(radius, detail)
           // PlaneGeometry(xlen, ylen)
           new THREE.CubeGeometry(xlen, ylen, zdepth),
-          new THREE.MeshBasicMaterial({color: 0x0088FF, opacity: 0.8, wireframe: true})
+          new THREE.MeshLambertMaterial({color: color})
         )
-        cube.position.z = 10;
-
+        cube.castShadow = true;
         return cube;
       }
+
+
       function createSphere(opt) {
         var xstart = opt.xstart? opt.xstart:0;
         var xlen = opt.xlen? opt.xlen:Math.PI;
@@ -185,12 +192,13 @@
         geometry.faces.push(new THREE.Face3(0,2,3));
         geometry.faces.push(new THREE.Face3(1,2,3));
         var mesh = new THREE.Mesh(geometry,
-          new THREE.MeshBasicMaterial({
+          new THREE.MeshLambertMaterial({
+            color: 0x4080ff,
             side: THREE.DoubleSide,
-            color: 0xEDFF00,
             opacity: 0.5
             //wireframe: true
           }));
+        mesh.castShadow = true;
         return mesh;
       }
 
@@ -207,10 +215,65 @@
         ThreeShp.r.render( ThreeShp.s, ThreeShp.c );
       }
 
+      // !important PhongMatetial means mirror reflect!!
+      // load texture mapping to Mesh face.
+      function createPlane(xlen) {
+        var plane = new THREE.Mesh(
+          new THREE.PlaneGeometry(xlen, xlen),
+          new THREE.MeshPhongMaterial({
+            color: 0xcccccc,
+            side: THREE.DoubleSide
+          })
+        );
+        plane.position.set(0, 0, 12);
+        plane.receiveShadow = true;
+        console.log('create plane geometry');
+        return plane;
+      }
 
-      var light = new THREE.DirectionalLight(0xffffff);
-      light.position.set(-5, 10, 50);
+      ThreeShp.s.add(createPlane(80));
+
+      // var light = new THREE.DirectionalLight(0xffffff);
+      var ambient = new THREE.AmbientLight(0xeeeeee);
+      ThreeShp.s.add(ambient);
+
+      // SpotLight(color, intensity)
+      var light = new THREE.SpotLight(0xFF0945, 1.5);
+      light.position.set(20, 10, 50);
+      light.angle = Math.PI/4;
+      light.decay = 2;
+      light.distance = 100;
+      light.penumbra = 0;
+      // light.target = targetObj;
+
+      light.castShadow = true;
+      light.shadow.camera.near = 1;
+      light.shadow.camera.far = 100;
+
+      light.shadow.mapSize.width = 1024;
+      light.shadow.mapSize.height = 1024;
+
+      var lightHelper = new THREE.SpotLightHelper(light);
+
       ThreeShp.s.add(light);
+      ThreeShp.s.add(lightHelper);
+
+      var lightViz = createRect(10, 10, 10, 0x4080ff);
+      lightViz.position.set(10, 5, 20);
+      ThreeShp.s.add(lightViz);
+
+      var BoxGeom = createRect(10, 5, 3, 0x2040aa);
+      BoxGeom.position.set(-10, 5, 20);
+      ThreeShp.s.add(BoxGeom);
+
+      var rotateAnimate = function() {
+        lightViz.rotation.z += 0.01;
+        ThreeShp.r.render(ThreeShp.s, ThreeShp.c);
+        requestAnimationFrame(rotateAnimate);
+      }
+      requestAnimationFrame(rotateAnimate);
+
+
       drawAxes(ThreeShp.s);
 
 
@@ -233,6 +296,7 @@
           color: 0xffff00,
           wireframe: true
       });
+
       // load font
       var loader = new THREE.FontLoader();
       loader.load('helvetiker_bold.typeface.json', function(font) {
@@ -250,7 +314,7 @@
       texture.repeat.set(4, 4);*/
 
       // load texture mapping to Mesh face.
-      function createPlane(xlen) {
+      /*function createPlane(xlen) {
         var plane = new THREE.Mesh(
           new THREE.PlaneGeometry(xlen, xlen),
           new THREE.MeshPhongMaterial({
@@ -259,7 +323,7 @@
           })
         );
         return plane;
-      }
+      }*/
       
             
       function drawAxes(scene) {
