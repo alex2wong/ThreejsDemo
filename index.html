@@ -2,27 +2,6 @@
   <head>      
   </head>
   <body>
-      <div id="controlpanel">
-        <input type="button" class="btn-ctrl" id="btn-zin" value="ZoomIn"></input>
-        <input type="button" class="btn-ctrl" id="btn-zout" value="ZoomOut"></input>
-      </div>
-      <script>
-        var zoomin = document.getElementById("btn-zin");
-        zoomin.onclick=function(){
-          c.position.setZ(c.position.z/2.00>50?c.position.z/2.00>50:50);
-          // r.render(s, c);
-          // requestAnimationFrame(animate);
-          console.log('zoomin');
-        }
-        var zoomout = document.getElementById("btn-zout");
-        zoomout.onclick=function(){
-          c.position.setZ(c.position.z*2.00<1000?c.position.z*2.00:1000);
-          // r.render(s, c);
-          // requestAnimationFrame(animate);
-          console.log('zoomout');
-        }
-
-      </script>
   </body>
   <!-- <script src="Three.js"></script> -->
   <script src="three.min.js"></script>
@@ -238,7 +217,7 @@
       ThreeShp.s.add(ambient);
 
       // SpotLight(color, intensity)
-      var light = new THREE.SpotLight(0xFF0945, 1.5);
+      var light = new THREE.SpotLight(0xffffffFFF, 1.5);
       light.position.set(20, 10, 50);
       light.angle = Math.PI/4;
       light.decay = 2;
@@ -279,15 +258,16 @@
 
       var lamber = new THREE.MeshLambertMaterial({
         // reflect color and emissive color.
-        color: 0xffff00,
+        color: 0xaaaaaa,
         emissive: 0xff0000,
+        map: texture
         // ambient: effective when AmbientLight is set.
       });
 
       var phong = new THREE.MeshPhongMaterial({
         // mirror reflect color
         specular: 0xaaaaaa,
-        shininess: 1000,
+        shininess: 50,
         map: texture
       }) 
 
