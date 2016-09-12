@@ -17,11 +17,11 @@
         }
 
         #height {
-            display: block;
+            display: none;
         }
     </style>
 <body>
-<input type="file" name="" id="heightFile" onchange="loadHeight()">
+<!-- <input type="file" name="" id="heightFile" onchange="loadHeight()"> -->
 <canvas id="height"></canvas>
 </body>
 <script type="text/javascript" src="three.min.js"></script>
@@ -33,12 +33,12 @@ var loader = new THREE.TextureLoader();
 var scene = new THREE.Scene();
 
 var renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(1024, 768);
 document.body.appendChild(renderer.domElement);
 
 var cam = new THREE.PerspectiveCamera(41, window.innerWidth / window.innerHeight, 1, 100000);
-cam.position.set(5, 15, 25);
-cam.lookAt(new THREE.Vector3(0, 0, 0));
+cam.position.set(34, -721, 277);
+cam.lookAt(new THREE.Vector3(-34, -921, 0));
 scene.add(cam);
 
 var camHelper = new THREE.CameraHelper(cam);
@@ -62,6 +62,9 @@ cube.position.x = 2;
 cube.castShadow = true;
 // scene.add(cube);
 
+// create BufferPlaneGeometry
+var bufferWidth = 1023;
+var bufferPlane = bufferPlaneGeom(bufferWidth, bufferWidth, bufferWidth, bufferWidth);
 
 var ambientlight = new THREE.AmbientLight(0xffffff);
 scene.add(ambientlight);
@@ -88,7 +91,7 @@ function addTexture(texture) {
         wireframe: true
     });
     var planeMesh = new THREE.Mesh(planeGeom, material);
-    var bufferPlane = bufferPlaneGeom(1024, 1024, 1024, 1024);
+    
     var customBufferPlane = customGeom(40, 40, 40);
     // console.log('bufferPlane has faces number: ' + customMesh.faces.length);
     var bufferPlaneMesh = new THREE.Mesh(bufferPlane, material);
@@ -136,12 +139,15 @@ function bufferPlaneGeom(width, height, xseg, yseg) {
     return geometry;
 }
 
-function attachHeight(geometry) {
-    var data = loadHeight();
+function attachHeight(geometry, data) {
     var vertices = geometry.attributes.position.array;
     console.log('bufferGeom Position Array length: '+ vertices.length/3.0);
     for ( var i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
-        vertices[ j-1 ] = data[i];
+        if (!data[i]) {
+            break;
+        } else {
+            vertices[ j-1 ] = data[i] * 0.1;
+        }
     }
     console.log('height attach finished...');
     return geometry;
@@ -204,8 +210,8 @@ function customGeom(xlen, ylen, segment) {
     return geometry;
 }
 
-function loadHeight() {
-    var fileContain = document.getElementById('heightFile');
+(function loadHeight() {
+    /*var fileContain = document.getElementById('heightFile');*/
     var canvas = document.getElementById('height');
     var width = height = 1024;
     var data = new Uint8Array(height*width);
@@ -226,26 +232,30 @@ function loadHeight() {
         for (var i = 0, j = 0, l = imageData.length; i < l; j++, i+=4) {
             data[j] = imageData[i];
         }
+        attachHeight(bufferPlane, data);
+        loadTexture();
     }
-    img.src='img/height.png';
+    img.src = 'img/height.png';
     return data;
-}
+})()
 
 // load a resource
-loader.load(
-    // resource URL
-    'img/1.jpg',
-    // Function when resource is loaded
-    addTexture,
-    // Function called when download progresses
-    function ( xhr ) {
-        console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
-    },
-    // Function called when download errors
-    function ( xhr ) {
-        console.log( 'An error happened' );
-    }
-);
+function loadTexture(){ 
+    loader.load(
+        // resource URL
+        'img/1.jpg',
+        // Function when resource is loaded
+        addTexture,
+        // Function called when download progresses
+        function ( xhr ) {
+            console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+        },
+        // Function called when download errors
+        function ( xhr ) {
+            console.log( 'An error happened' );
+        }
+    );
+}
 
 </script>
 </html>
