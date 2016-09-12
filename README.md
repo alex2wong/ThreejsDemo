@@ -7,3 +7,4 @@
 So，能不能基于webgl或者threejs设计一个光滑的镜面，反映外界的实景。。想必非常酷炫。
 
 ## 光与影
+本项目的意义在于基于ThreeJS库打造 有趣的应用，目前本项目有一个基础Demo展现了基于Webgl的基本对象绘制，光与影的设置。第二个Demo(textureLoader) 展现了稍微高级的使用方法，例如BufferGeometry的使用，canvas的像素获取，可以用来实现一些有趣的应用。textureLoader这个demo用到了谷歌中土世界地图的素材，4张非常优雅的影像切片，以及1张包含高程信息的图像（4个波段，rgba）。利用高程信息拉伸BufferGeometry初始化的平面，可以实现地形效果。
