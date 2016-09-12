@@ -38,7 +38,7 @@ p.createModel = function(shp, spherize) {
         if (false && r.type == SHP.POLYGON) {
           //console.log('new polygon', poly.length, points.length/2);
           poly.pop();
-          polys.push(new THREE.ExtrudeGeometry(new THREE.Shape(poly), {amount: 0}));
+          polys.push(new THREE.ExtrudeGeometry(new THREE.Shape(poly), {amount: 4}));
         } else {
           //console.log('new polyline', poly.length, points.length/2);
           var geo = new THREE.Geometry();

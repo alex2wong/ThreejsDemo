@@ -3,9 +3,29 @@
 <head>
     <title>texture loader</title>
 </head>
+    <style type="text/css">
+        #heightFile {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 40px;
+            width: auto;
+            border: 1px dotted gray;
+        }
+        #heightFile:hover {
+            border: 2px solid darkgray;
+        }
+
+        #height {
+            display: block;
+        }
+    </style>
 <body>
+<input type="file" name="" id="heightFile" onchange="loadHeight()">
+<canvas id="height"></canvas>
 </body>
 <script type="text/javascript" src="three.min.js"></script>
+<script type="text/javascript" src="ImprovedNoise.js"></script>
 <script src="TrackballControls.js"></script>
 <script>
 // instantiate a loader
@@ -34,7 +54,7 @@ var planeGeom = new THREE.PlaneGeometry(40, 40);
 var planeMesh = new THREE.Mesh(new THREE.PlaneGeometry(40, 40),
                     new THREE.MeshBasicMaterial({color: 0x88eeff, side: THREE.DoubleSide}));
 planeMesh.receiveShadow = true;
-scene.add(planeMesh);
+// scene.add(planeMesh);
 
 cube = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1),
         new THREE.MeshLambertMaterial({color: 0x00ff00}));
@@ -55,39 +75,160 @@ function draw() {
     requestAnimationFrame(draw);
 }
 
-function addTexture(texture) {
-    console.log('texture loaded.')
+function addTexture(texture) {    
+    texture.mapping = THREE.CubeReflectionMapping;
+    console.log('texture loaded. mapping type is : '+ texture.mapping);
     var material = new THREE.MeshLambertMaterial( {
         map: texture,
         side: THREE.DoubleSide
      } );
+
+    var wireMaterial = new THREE.MeshLambertMaterial({
+        color: 0x88eeff,
+        wireframe: true
+    });
     var planeMesh = new THREE.Mesh(planeGeom, material);
-    var customMesh = new THREE.Mesh(customGeom(), material);
-    scene.add(planeMesh);
-    scene.add(customMesh);
+    var bufferPlane = bufferPlaneGeom(1024, 1024, 1024, 1024);
+    var customBufferPlane = customGeom(40, 40, 40);
+    // console.log('bufferPlane has faces number: ' + customMesh.faces.length);
+    var bufferPlaneMesh = new THREE.Mesh(bufferPlane, material);
+    bufferPlaneMesh.position.set(0,0,10);
+    scene.add(bufferPlaneMesh);
+    scene.add(new THREE.Mesh(customBufferPlane, wireMaterial));
     renderer.render(scene, cam);
 }
 
-function customGeom(xlen, ylen, interval) {
+function customObj3d() {
+    var mesh = new THREE.Object3D();
+
+    mesh.add( new THREE.LineSegments(
+
+        new THREE.Geometry(),
+
+        new THREE.LineBasicMaterial( {
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.5
+        } )
+
+    ) );
+
+    mesh.add( new THREE.Mesh(
+
+        new THREE.Geometry(),
+
+        new THREE.MeshPhongMaterial( {
+            color: 0x156289,
+            emissive: 0x072534,
+            side: THREE.DoubleSide,
+            shading: THREE.FlatShading
+        } )
+
+    ) );
+    return mesh;
+}
+function bufferPlaneGeom(width, height, xseg, yseg) {
+    var geometry = new THREE.PlaneBufferGeometry( width, height, xseg, yseg);
+    var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide, wireframe: true} );
+    var plane = new THREE.Mesh( geometry, material );
+    plane.position.set(0, 0, -10);
+
+    return geometry;
+}
+
+function attachHeight(geometry) {
+    var data = loadHeight();
+    var vertices = geometry.attributes.position.array;
+    console.log('bufferGeom Position Array length: '+ vertices.length/3.0);
+    for ( var i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
+        vertices[ j-1 ] = data[i];
+    }
+    console.log('height attach finished...');
+    return geometry;
+}
+
+function generateHeight( width, height ) {
+
+    var size = width * height, data = new Uint8Array( size ),
+    perlin = new ImprovedNoise(), quality = 1, z = Math.random();
+
+    for ( var j = 0; j < 4; j ++ ) {
+
+        for ( var i = 0; i < size; i ++ ) {
+
+            var x = i % width, y = ~~ ( i / width );
+            data[ i ] += Math.abs( perlin.noise( x / quality, y / quality, z ) * quality * 1.75 );
+
+        }
+
+        quality *= 5;
+
+    }
+    console.log('return generateHeight data');
+    return data;
+}
+
+
+
+// xlen means width of this geometry, interval means segment..
+function customGeom(xlen, ylen, segment) {
     var startX = 0;
     var endX = startX + xlen;
     var startY = 0;
     var endY = startY + ylen;
-    var inter = parseInt(xlen/interval);
+    var inter = parseInt(xlen/segment);
     var geometry = new THREE.Geometry();
-    for (let i = 0; i < xlen; i++) {
-        for (let i = 0; i < ylen; i++) {
-            geometry.vertices.push(new THREE.Vector3(startX, startY + i * inter, Math.random()*10));
+    for (let i = 0; i < xlen; i++) {        
+        for (let k = 0; k < ylen; k++) {
+            geometry.vertices.push(new THREE.Vector3(startX, startY + k * inter, Math.random()*0.5));
         }
-        startY = 0;
+        startX += inter;
     }
 
+    var vertices = geometry.vertices;
+    console.log('custom geometry, vertices number:' + vertices.length);
+    for (let j = 0; j < vertices.length-segment-1; j++) {
+        if ((j+1) % segment == 0 ) {
+            continue;
+        }
+        // console.log('down Triangle: '+ j, j+1, (j+segment));
+        // console.log('up Triangle: ' + (j+segment+1), j+1, (j+segment));
+        geometry.faces.push(new THREE.Face3(j, j+segment, j+segment+1));
+        geometry.faces.push(new THREE.Face3(j+segment+1, j+1, j));
+    }
     // Face3 means a 3points- Patch consists vertice (index in vertices Arr)
-    geometry.faces.push(new THREE.Face3(0,1,2));
-    geometry.faces.push(new THREE.Face3(0,1,3));
-    geometry.faces.push(new THREE.Face3(0,2,3));
-    geometry.faces.push(new THREE.Face3(1,2,3));
+    // geometry.faces.push(new THREE.Face3(0,1,2));
+    // geometry.faces.push(new THREE.Face3(0,1,3));
+    // geometry.faces.push(new THREE.Face3(0,2,3));
+    // geometry.faces.push(new THREE.Face3(1,2,3));
     return geometry;
+}
+
+function loadHeight() {
+    var fileContain = document.getElementById('heightFile');
+    var canvas = document.getElementById('height');
+    var width = height = 1024;
+    var data = new Uint8Array(height*width);
+    canvas.width = 1024;
+    canvas.height = 1024;
+
+    context = canvas.getContext( '2d' );
+    context.fillStyle = '#000';
+    context.fillRect( 0, 0, width, height );
+
+    var img = new Image();
+    img.onload = function() {
+        context.drawImage(img, 0, 0);
+
+        image = context.getImageData( 0, 0, width, height );
+        imageData = image.data;
+        console.log('image data length: '+ imageData.length);
+        for (var i = 0, j = 0, l = imageData.length; i < l; j++, i+=4) {
+            data[j] = imageData[i];
+        }
+    }
+    img.src='img/height.png';
+    return data;
 }
 
 // load a resource
