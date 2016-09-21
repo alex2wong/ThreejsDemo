@@ -4,7 +4,7 @@
   <body>
   </body>
   <!-- <script src="Three.js"></script> -->
-  <script src="three.min.js"></script>
+  <script src="three.js"></script>
     <script src="bitview.js"></script>
     <script src="shp.js"></script>
     <script src="shp_three.js"></script>
@@ -332,39 +332,46 @@
           wireframe: true
       });
 
-      // load font
-      /*var loader = new THREE.FontLoader();
-      loader.load('helvetiker_bold.typeface.json', function(font) {
-          var mesh = new THREE.Mesh(new THREE.TextGeometry('Hello', {
-              font: font,
-              size: 1,
-              height: 1
-          }), material);
-          ThreeShp.s.add(mesh);
-      });*/
+      // load font options: helvetiker, optimer, gentilis, droid_sans, droid_serif
+      var loader = new THREE.FontLoader();
+      loader.load('http://threejs.org/examples/fonts/optimer_regular.typeface.json', function(res) {
+          var font = res;
+          displayObjName(font);
+      });
 
       // init textGeom for each Obj
-      (function displayObjName() {
+      function displayObjName(font) {
+        console.log('init displayObjName');
         var objs = ThreeShp.s.children;
+        var objsNum = 0;
         objs.forEach(obj => {
           let objName = obj.name? obj.name:'unknown';
           let objLabel = new THREE.Mesh(
             new THREE.TextGeometry(obj.name, {
-              size: 2,
-              height: 1
+              font: font,
+              size: 3,
+              height: 0.1
             }), 
-            new THREE.MeshBasicMaterial( { color: 0xffaa88, side: THREE.DoubleSide} ));
+            new THREE.MeshPhongMaterial( { color: 0xaaaaaa, side: THREE.DoubleSide} ));
           // copy is shallow copy... refer to source.
-          objLabel.position = obj.position.copy(obj.position);
+          objLabel.position.x = obj.position.x;
+          objLabel.position.y = obj.position.y;
+          objLabel.position.z = obj.position.z;
+
           objLabel.position.z += 10;
+          // objLabel.rotation.y += Math.PI/2;
           objLabel.name = obj.name;
           objLabel.volume = obj.volume? obj.volume:10;
           objLabel.visible = true;
+          // objLabel.castShadow = true;
+
           displayName = objLabel;
           objLabels.push(objLabel);
           ThreeShp.s.add(objLabel);
+          if(obj.name) objsNum += 1;
         });
-      })();
+        console.log(objsNum + ' objs has Name');
+      }
 
 
       var texture = new THREE.TextureLoader().load('img/grass.jpg');
