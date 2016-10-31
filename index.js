@@ -12,7 +12,7 @@ const mouse = new THREE.Vector2();
 var displayName; // current display Name
 var objLabels = [];
 
-ThreeShp.init = function(){        
+ThreeShp.init = function(){
   // set the canvas width and length
   this.r.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(this.r.domElement);
@@ -309,7 +309,7 @@ var material = new THREE.MeshBasicMaterial({
 
 // load font options: helvetiker, optimer, gentilis, droid_sans, droid_serif
 var loader = new THREE.FontLoader();
-loader.load('http://threejs.org/examples/fonts/optimer_regular.typeface.json', function(res) {
+loader.load('optimer_regular.typeface.json', function(res) {
     var font = res;
     displayObjName(font);
 });
