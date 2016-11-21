@@ -48,6 +48,7 @@ function draw() {
     requestAnimationFrame(draw);
 }
 
+// add material for bufferPlane and customBufferPlane.
 function addTexture(texture) {    
     texture.mapping = THREE.CubeReflectionMapping;
     console.log('texture loaded. mapping type is : '+ texture.mapping);
@@ -56,18 +57,18 @@ function addTexture(texture) {
         side: THREE.DoubleSide
      } );
 
-    var wireMaterial = new THREE.MeshLambertMaterial({
+    wireMaterial = new THREE.MeshLambertMaterial({
         color: 0x88eeff,
         wireframe: true
     });
     var planeMesh = new THREE.Mesh(planeGeom, material);
     
-    var customBufferPlane = customGeom(40, 40, 40);
+    var customBufferPlane = customGeom(256, 256, 256);
     // console.log('bufferPlane has faces number: ' + customMesh.faces.length);
     var bufferPlaneMesh = new THREE.Mesh(bufferPlane, material);
     bufferPlaneMesh.position.set(0,0,10);
     scene.add(bufferPlaneMesh);
-    scene.add(new THREE.Mesh(customBufferPlane, wireMaterial));
+    // scene.add(new THREE.Mesh(customBufferPlane, wireMaterial));
     renderer.render(scene, cam);
 }
 
@@ -109,13 +110,16 @@ function bufferPlaneGeom(width, height, xseg, yseg) {
     return geometry;
 }
 
+// set z-depth value for vertices in geometry
 function attachHeight(geometry, data) {
+    // return position vertices in geometry.
     var vertices = geometry.attributes.position.array;
     console.log('bufferGeom Position Array length: '+ vertices.length/3.0);
     for ( var i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
         if (!data[i]) {
             break;
         } else {
+            // set z-depth value namely height
             vertices[ j-1 ] = data[i] * 0.1;
         }
     }
@@ -184,11 +188,12 @@ function customGeom(xlen, ylen, segment) {
     /*var fileContain = document.getElementById('heightFile');*/
     var canvas = document.getElementById('height');
     var width = height = 1024;
+    // Malloc memory for Array length with 1024*1024, storing uint8(0~255)
     var data = new Uint8Array(height*width);
     canvas.width = 1024;
     canvas.height = 1024;
 
-    context = canvas.getContext( '2d' );
+    context = canvas.getContext('2d');
     context.fillStyle = '#000';
     context.fillRect( 0, 0, width, height );
 
@@ -199,15 +204,26 @@ function customGeom(xlen, ylen, segment) {
         image = context.getImageData( 0, 0, width, height );
         imageData = image.data;
         console.log('image data length: '+ imageData.length);
+        // get the band4 value from height source image.
         for (var i = 0, j = 0, l = imageData.length; i < l; j++, i+=4) {
             data[j] = imageData[i];
         }
+        // attach height to bufferPlane geometry.
         attachHeight(bufferPlane, data);
         loadTexture();
     }
     img.src = 'img/height.png';
     return data;
 })()
+
+
+function loadTerrain(){
+    var width = 256
+    var geometry = Heightloader.loadHeight('img/9.428.213.png', width, width);
+
+    scene.add(new THREE.Mesh(geometry, wireMaterial));
+    renderer.render(scene, cam);
+}
 
 // load a resource
 function loadTexture(){ 
