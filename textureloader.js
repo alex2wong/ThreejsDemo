@@ -87,6 +87,10 @@ function addTexture(texture) {
     scene.add(bufferPlaneMesh);
     // scene.add(new THREE.Mesh(customBufferPlane, wireMaterial));
     renderer.render(scene, cam);
+    var statusBar = document.querySelector("#reset");
+    if (statusBar) {
+        statusBar.innerHTML = "receive data completed.";
+    }
     requestAnimationFrame(rotate1);
 }
 
