@@ -7,16 +7,33 @@ renderer.setSize(1024, 768);
 document.body.appendChild(renderer.domElement);
 
 var cam = new THREE.PerspectiveCamera(41, window.innerWidth / window.innerHeight, 1, 100000);
-cam.position.set(34, -721, 277);
-cam.lookAt(new THREE.Vector3(-34, -921, 0));
+cam.position.set(0, -721, 277);
+cam.lookAt(new THREE.Vector3(0, -921, 0));
 scene.add(cam);
 
 var camHelper = new THREE.CameraHelper(cam);
 scene.add(camHelper);
 
 var trackControl = new THREE.TrackballControls(cam, renderer.domElement);
-trackControl.minDistance = 10;
-trackControl.maxDistance = 10000;
+trackControl.minDistance = 300;
+trackControl.maxDistance = 1000;
+
+var mouseStartX = 0, mouseStartY = 0;
+// add custom mouse listener.
+// renderer.domElement.onmousedown = function(evt){
+//     var curMouseX = evt.clientX, curMouseY = evt.clientY;
+//     var offsetX = curMouseX - mouseStartX;
+//     evt.preventDefault();
+// }
+
+var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame; 
+window.requestAnimationFrame = requestAnimationFrame;
+
+var rotate1 = function(t) {
+    bufferPlaneMesh.rotation.z += 0.0001 * Math.PI*2;
+    renderer.render(scene, cam);
+    requestAnimationFrame(rotate1);
+}
 
 var planeGeom = new THREE.PlaneGeometry(40, 40);
 
@@ -33,7 +50,7 @@ cube.castShadow = true;
 // scene.add(cube);
 
 // create BufferPlaneGeometry
-var bufferWidth = 1023;
+var bufferWidth = 1023, bufferPlaneMesh = null;
 var bufferPlane = bufferPlaneGeom(bufferWidth, bufferWidth, bufferWidth, bufferWidth);
 
 var ambientlight = new THREE.AmbientLight(0xffffff);
@@ -65,11 +82,12 @@ function addTexture(texture) {
     
     var customBufferPlane = customGeom(256, 256, 256);
     // console.log('bufferPlane has faces number: ' + customMesh.faces.length);
-    var bufferPlaneMesh = new THREE.Mesh(bufferPlane, material);
+    bufferPlaneMesh = new THREE.Mesh(bufferPlane, material);
     bufferPlaneMesh.position.set(0,0,10);
     scene.add(bufferPlaneMesh);
     // scene.add(new THREE.Mesh(customBufferPlane, wireMaterial));
     renderer.render(scene, cam);
+    requestAnimationFrame(rotate1);
 }
 
 function customObj3d() {

@@ -19,10 +19,21 @@
         #height {
             display: none;
         }
+        .btn {
+            position: absolute;
+            padding: 4px;
+            background-color: #ddd;
+        }
+        .btn:hover {
+            cursor: pointer;
+            background-color: #fff;
+            transform: background-color .4s ease-out;
+        }
     </style>
 <body>
 <!-- <input type="file" name="" id="heightFile" onchange="loadHeight()"> -->
 <canvas id="height"></canvas>
+<div class="btn" id="reset">reset cam</div>
 </body>
 <script type="text/javascript" src="three.min.js"></script>
 <script type="text/javascript" src="ImprovedNoise.js"></script>
