@@ -1,5 +1,7 @@
 // instantiate a loader
 var loader = new THREE.TextureLoader();
+var collLoader = new THREE.ColladaLoader();
+collLoader.options.convertUpAxis = true;
 var scene = new THREE.Scene();
 
 var renderer = new THREE.WebGLRenderer();
@@ -25,6 +27,14 @@ var mouseStartX = 0, mouseStartY = 0;
 //     var offsetX = curMouseX - mouseStartX;
 //     evt.preventDefault();
 // }
+
+collLoader.load( './assets/spacecraft4/model.dae', function ( collada ) {
+    var object = collada.scene;
+    object.scale.set( 0.0015, 0.0015, 0.0015 );
+    object.position.set( -2, 0.2, 100 );
+    object.rotation.y = Math.PI/2;
+    scene.add( object );
+} );
 
 var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame; 
 window.requestAnimationFrame = requestAnimationFrame;
@@ -264,3 +274,4 @@ function loadTexture(){
         }
     );
 }
+
