@@ -1,7 +1,6 @@
 // instantiate a loader
 var loader = new THREE.TextureLoader();
-var collLoader = new THREE.ColladaLoader();
-collLoader.options.convertUpAxis = true;
+var colladaLoader = new THREE.ColladaLoader();
 var scene = new THREE.Scene();
 
 var renderer = new THREE.WebGLRenderer();
@@ -20,6 +19,30 @@ var trackControl = new THREE.TrackballControls(cam, renderer.domElement);
 trackControl.minDistance = 300;
 trackControl.maxDistance = 1000;
 
+var object1, object2;
+colladaLoader.options.convertUpAxis = true;
+colladaLoader.load( './assets/model.dae', function ( collada ) {
+
+    object1 = collada.scene;
+
+    object1.scale.set( 0.25, 0.25, 0.25 );
+    object1.position.set( 100, 0.2, 100 );
+    object1.rotation.x = Math.PI/2;
+    // original model'z is it long axis..
+    // y is horizontalAxis.
+    object1.rotation.y += Math.PI;
+    scene.add( object1 );
+
+} );
+// colladaLoader.load('./assets/models/model.dae', function(collada) {
+//     object2 = collada.scene;
+
+//     
+//     // original model'z is it long axis..
+//     // y is horizontalAxis.
+//     object2.rotation.y += Math.PI;
+//     scene.add( object2 );
+// });
 var mouseStartX = 0, mouseStartY = 0;
 // add custom mouse listener.
 // renderer.domElement.onmousedown = function(evt){
@@ -41,6 +64,10 @@ window.requestAnimationFrame = requestAnimationFrame;
 
 var rotate1 = function(t) {
     bufferPlaneMesh.rotation.z += 0.0001 * Math.PI*2;
+    if(object1) {
+        object1.rotation.y += 0.0002 * Math.PI*2;
+        // object2.rotation.y += 0.0001 * Math.PI*2;
+    }
     renderer.render(scene, cam);
     requestAnimationFrame(rotate1);
 }
@@ -65,6 +92,24 @@ var bufferPlane = bufferPlaneGeom(bufferWidth, bufferWidth, bufferWidth, bufferW
 
 var ambientlight = new THREE.AmbientLight(0xffffff);
 scene.add(ambientlight);
+// SpotLight(color, intensity)
+var light = new THREE.SpotLight(0xffffffFFF, 1.5);
+light.position.set(100, 0.2, 150 );
+light.angle = Math.PI/3;
+light.decay = 2;
+light.distance = 400;
+light.penumbra = 0;
+// light.target = targetObj;
+
+light.castShadow = true;
+light.shadow.camera.near = 1;
+light.shadow.camera.far = 400;
+
+light.shadow.mapSize.width = 1024;
+light.shadow.mapSize.height = 1024;
+var lightHelper = new THREE.SpotLightHelper(light);
+scene.add(light);
+// scene.add(lightHelper);
 
 requestAnimationFrame(draw);
 
@@ -94,6 +139,7 @@ function addTexture(texture) {
     // console.log('bufferPlane has faces number: ' + customMesh.faces.length);
     bufferPlaneMesh = new THREE.Mesh(bufferPlane, material);
     bufferPlaneMesh.position.set(0,0,10);
+    bufferPlaneMesh.receiveShadow = true;
     scene.add(bufferPlaneMesh);
     // scene.add(new THREE.Mesh(customBufferPlane, wireMaterial));
     renderer.render(scene, cam);
