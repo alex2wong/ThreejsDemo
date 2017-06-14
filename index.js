@@ -19,7 +19,7 @@ ThreeShp.init = function(){
   // THREE data struct.. Scene.add(Mesh)/Object3D
   this.loader = new THREE.SHPLoader();
   // 照相机在三维空间中的位置。 
-  this.c.position.z = 50;
+  this.c.position.z = 150;
   this.c.position.y = -30;
   this.c.position.x = 0;
   this.s.add(this.c);

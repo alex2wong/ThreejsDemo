@@ -8,42 +8,45 @@ renderer.setSize(1024, 768);
 document.body.appendChild(renderer.domElement);
 
 var cam = new THREE.PerspectiveCamera(41, window.innerWidth / window.innerHeight, 1, 100000);
-cam.position.set(0, -721, 277);
-cam.lookAt(new THREE.Vector3(0, -921, 0));
+// cam.position.set(0, -721, 277);
+cam.position.set(0, -400, 277);
+cam.lookAt(new THREE.Vector3(0, -10, 0));
 scene.add(cam);
 
 var camHelper = new THREE.CameraHelper(cam);
 scene.add(camHelper);
 
 var trackControl = new THREE.TrackballControls(cam, renderer.domElement);
-trackControl.minDistance = 300;
+trackControl.minDistance = 200;
 trackControl.maxDistance = 1000;
 
-var object1, object2;
+var object1, object2, engineOffX, engineOffY, engineOffZ;
 colladaLoader.options.convertUpAxis = true;
 colladaLoader.load( './assets/model.dae', function ( collada ) {
 
     object1 = collada.scene;
-    object2 = collada.scene;
-
+    // what about its size.. to calc the particle position offset.
     object1.scale.set( 0.25, 0.25, 0.25 );
     object1.position.set( 100, 0.2, 100 );
     object1.rotation.x = Math.PI/2;
     // original model'z is it long axis..
     // y is horizontalAxis.
     object1.rotation.y += Math.PI;
-
-    object2.scale.set( 0.25, 0.25, 0.25 );
-    object2.position.set( 80, 0.2, 100 );
-    object2.rotation.x = Math.PI/2;
-    object2.rotation.y += Math.PI;
     scene.add( object1 );
-    scene.add( object2 );
-
+    bindLight(light, object1);
 } );
-// colladaLoader.load('./assets/models/model.dae', function(collada) {
-//     object2 = collada.scene;
 
+function calcOffset(rotationY) {
+    var offsetX, offsetY = 0;
+    // Math.sin(rotationY
+
+    return {
+        x: offsetX, 
+        y: offsetY
+    };
+}
+
+var tick = 0, clock = new THREE.Clock(), spawnerOptions, particleSystem; 
 //     
 //     // original model'z is it long axis..
 //     // y is horizontalAxis.
@@ -64,8 +67,7 @@ window.requestAnimationFrame = requestAnimationFrame;
 var rotate1 = function(t) {
     bufferPlaneMesh.rotation.z += 0.0001 * Math.PI*2;
     if(object1) {
-        object1.rotation.y += 0.0002 * Math.PI*2;
-        // object2.rotation.y += 0.0001 * Math.PI*2;
+        // object1.rotation.y += 0.0002 * Math.PI*2;        
     }
     renderer.render(scene, cam);
     requestAnimationFrame(rotate1);
@@ -93,8 +95,8 @@ var ambientlight = new THREE.AmbientLight(0xffffff);
 scene.add(ambientlight);
 // SpotLight(color, intensity)
 var light = new THREE.SpotLight(0xffffffFFF, 1.5);
-light.position.set(100, 0.2, 150 );
-light.angle = Math.PI/3;
+light.position.set(100, 0.2, 100);
+light.angle = Math.PI/6;
 light.decay = 2;
 light.distance = 400;
 light.penumbra = 0;
@@ -104,13 +106,22 @@ light.castShadow = true;
 light.shadow.camera.near = 1;
 light.shadow.camera.far = 400;
 
-light.shadow.mapSize.width = 1024;
-light.shadow.mapSize.height = 1024;
+light.shadow.mapSize.width = 512;
+light.shadow.mapSize.height = 512;
 var lightHelper = new THREE.SpotLightHelper(light);
 scene.add(light);
-// scene.add(lightHelper);
+scene.add(lightHelper);
 
 requestAnimationFrame(draw);
+
+function bindLight(spotlight, obj3d) {
+    if(obj3d && obj3d.isObject3D && spotlight.isLight) {
+        spotlight.position = obj3d.position;
+        spotlight.position.z += 20;
+        spotlight.position.x -= 20;
+        spotlight.position.y -= 20;
+    }
+}
 
 function draw() {
     trackControl.update();
