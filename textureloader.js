@@ -25,15 +25,14 @@ colladaLoader.options.convertUpAxis = true;
 colladaLoader.load( './assets/model.dae', function ( collada ) {
 
     object1 = collada.scene;
-    // what about its size.. to calc the particle position offset.
-    object1.scale.set( 0.25, 0.25, 0.25 );
+    object1.scale.set( 0.005, 0.005, 0.005 );
     object1.position.set( 100, 0.2, 100 );
     object1.rotation.x = Math.PI/2;
     // original model'z is it long axis..
     // y is horizontalAxis.
-    object1.rotation.y += Math.PI;
     scene.add( object1 );
     bindLight(light, object1);
+
 } );
 
 function calcOffset(rotationY) {
@@ -117,9 +116,9 @@ requestAnimationFrame(draw);
 function bindLight(spotlight, obj3d) {
     if(obj3d && obj3d.isObject3D && spotlight.isLight) {
         spotlight.position = obj3d.position;
-        spotlight.position.z += 20;
-        spotlight.position.x -= 20;
-        spotlight.position.y -= 20;
+        // spotlight.position.z += 20;
+        // spotlight.position.x -= 20;
+        // spotlight.position.y -= 20;
     }
 }
 
@@ -330,3 +329,4 @@ function loadTexture(){
         }
     );
 }
+
